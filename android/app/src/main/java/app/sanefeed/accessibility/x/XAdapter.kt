@@ -40,7 +40,8 @@ class XAdapter : PlatformAdapter {
             val bounds = Rect(row.bounds)
             if (bounds.intersect(clip)) Authored(row.key, row.handle, bounds, clip, row.countable) else null
         }
-        return ScreenScan(false, items, maxOf(walk.headers, rows.size), tabs, walk.owner)
+        val viewport = items.firstOrNull { it.countable }?.clip
+        return ScreenScan(false, items, maxOf(walk.headers, rows.size), tabs, walk.owner, viewport)
     }
 
     private class Row(val key: String, val handle: String, val bounds: Rect, val list: Rect, val countable: Boolean)

@@ -51,6 +51,12 @@ class AppGraph(context: Context) {
             (state.heuristic && BuzzerHeuristic.flags(handle))
     }
 
+    /** Whether [isHidden] can be true for some handle on [platform]. */
+    fun hidesAnyone(platform: Platform): Boolean {
+        val state = settings.state.value
+        return state.heuristic || state.manual[platform]?.isNotEmpty() == true || blocklist.list.value.hasAny(platform)
+    }
+
     private companion object {
         const val KEY_CLIENT_ID = "client_id"
     }

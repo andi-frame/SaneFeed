@@ -13,6 +13,8 @@ class BuzzerList(
 
     fun contains(platform: Platform, handle: String): Boolean = handles[platform]?.contains(handle) == true
 
+    fun hasAny(platform: Platform): Boolean = handles[platform]?.isNotEmpty() == true
+
     companion object {
         val EMPTY = BuzzerList(0, "", emptyMap())
 

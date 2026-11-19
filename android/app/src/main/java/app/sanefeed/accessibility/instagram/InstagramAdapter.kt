@@ -42,7 +42,7 @@ class InstagramAdapter : PlatformAdapter {
         val viewport = belowTopBar(root, Nodes.bounds(feed).takeUnless(Rect::isEmpty) ?: Rect(screen))
         val headers = Nodes.byId(root, S.POST_HEADER).map(Nodes::bounds)
         val posts = feedPosts(root, headers, viewport)
-        return ScreenScan(false, posts + stories(root, viewport), headers.size, tabs, owner)
+        return ScreenScan(false, posts + stories(root, viewport), headers.size, tabs, owner, Rect(viewport))
     }
 
     private fun feedPosts(root: AccessibilityNodeInfo, headerBounds: List<Rect>, viewport: Rect): List<Authored> {

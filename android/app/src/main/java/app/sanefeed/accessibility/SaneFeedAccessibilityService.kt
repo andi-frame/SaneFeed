@@ -61,7 +61,8 @@ class SaneFeedAccessibilityService : AccessibilityService() {
         scanRunning = true
         lastScanAt = SystemClock.uptimeMillis()
         val scrolledAt = scrolled
-        scanHandler.post { scan(scrolledAt) }
+        val scannedAt = lastScanAt
+        scanHandler.post { scan(scrolledAt, scannedAt) }
     }
 
     /** Once scrolling stops, masks shrink back from their in-motion slack to the scanned bounds. */
@@ -157,9 +158,9 @@ class SaneFeedAccessibilityService : AccessibilityService() {
     }
 
     /** Scan thread. */
-    private fun scan(scrolledAt: Int) {
+    private fun scan(scrolledAt: Int, scannedAt: Long) {
         val frame = try {
-            buildFrame(scrolledAt)
+            buildFrame(scrolledAt, scannedAt)
         } catch (e: RuntimeException) {
             // The target app changed its tree mid-scan: keep the overlays as they are until the next scan.
             lastEventPlatform?.let { graph.health.onError(it, e) }
@@ -186,7 +187,7 @@ class SaneFeedAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun buildFrame(scrolledAt: Int): Frame? {
+    private fun buildFrame(scrolledAt: Int, scannedAt: Long): Frame? {
         val root = targetRoot() ?: return null
         val platform = Platform.fromPackage(root.packageName) ?: return null
         root.getBoundsInScreen(screen)
@@ -225,7 +226,8 @@ class SaneFeedAccessibilityService : AccessibilityService() {
         if (!scan.isReelsScreen) graph.health.onFeedScan(platform, scan.candidates, scan.items.count { it.countable })
         val panel = if (count >= limit) Panel.LIMIT else null
         val tabs = if (settings.blockReels) scan.blockedTabs else emptyList()
-        return Frame(platform, panel, count, limit, tabs, masks, showChip, scrolledAt = scrolledAt)
+        val shield = platform == Platform.X && graph.hidesAnyone(platform)
+        return Frame(platform, panel, count, limit, tabs, masks, showChip, scrolledAt = scrolledAt, scannedAt = scannedAt, viewport = scan.viewport, shield = shield)
     }
 
     /** Presses Back at most once per [BACK_INTERVAL_MS] and gives up after [MAX_BACKS] tries, so it can't loop. */

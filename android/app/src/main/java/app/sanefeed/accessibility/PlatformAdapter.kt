@@ -21,6 +21,8 @@ class ScreenScan(
     val blockedTabs: List<Rect>,
     /** Account whose profile or story fills the screen, if any. */
     val owner: String? = null,
+    /** Visible area of the main scrolling list (bars excluded), when one was found. */
+    val viewport: Rect? = null,
 )
 
 /**

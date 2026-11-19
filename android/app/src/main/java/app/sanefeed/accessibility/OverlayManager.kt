@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.os.Build
+import android.os.SystemClock
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -27,6 +28,12 @@ internal class Frame(
     val owner: String? = null,
     /** The service's scroll total when the scan read the screen; masks follow scrolling from there. */
     val scrolledAt: Int = 0,
+    /** When that scan started, uptime millis. */
+    val scannedAt: Long = 0,
+    /** Visible area of the main list, for the [shield]. */
+    val viewport: Rect? = null,
+    /** Cover list content revealed by scrolling that no scan has read yet (see [OverlayManager.follow]). */
+    val shield: Boolean = false,
 )
 
 internal enum class Panel { LIMIT, SHORT_VIDEO, BLOCKED }
@@ -60,7 +67,14 @@ internal class OverlayManager(
     private var chipShown = false
     private val span = Rect()
 
-    val isShowing: Boolean get() = panelShown != null || chipShown || masks.isNotEmpty() || tabs.isNotEmpty()
+    /** Blank mask over the strip a scroll revealed since the last scan started; its authors are unknown. */
+    private val shield: View by lazy { inflater.inflate(R.layout.overlay_mask, null) }
+    private val shieldParams = layoutParams(touchable = false, opaque = true)
+    private var shieldShown = false
+    private var shieldArea: Rect? = null
+    private var scannedAt = 0L
+
+    val isShowing: Boolean get() = panelShown != null || chipShown || masks.isNotEmpty() || tabs.isNotEmpty() || shieldShown
 
     /** [scrolled] and [slack] are as in [follow]. */
     fun render(frame: Frame?, scrolled: Int, slack: Int) {
@@ -68,6 +82,8 @@ internal class OverlayManager(
         if (frame.panel != null) {
             showPanel(frame)
             renderMasks(emptyList(), 0, 0, 0)
+            shieldArea = null
+            placeShield(0, 0)
             renderTabs(emptyList())
             setChip(null)
             return
@@ -75,6 +91,10 @@ internal class OverlayManager(
         hidePanel()
         renderTabs(frame.blockedTabs)
         renderMasks(frame.masks, frame.scrolledAt, scrolled, slack)
+        // A scan mid-fling may find no post; the list hasn't moved on screen, so keep its last area.
+        shieldArea = if (frame.shield) frame.viewport ?: shieldArea else null
+        scannedAt = frame.scannedAt
+        placeShield(scrolled, slack)
         setChip(if (frame.showChip) context.getString(R.string.overlay_chip, frame.count, frame.limit) else null)
     }
 
@@ -85,11 +105,41 @@ internal class OverlayManager(
      */
     fun follow(scrolled: Int, slack: Int) {
         for (mask in masks) place(mask, scrolled - masksScrolledAt, slack)
+        placeShield(scrolled, slack)
+    }
+
+    /**
+     * Shows the shield once a scan has taken [SHIELD_DELAY_MS] without covering what the list
+     * revealed since it started: the bottom strip when content moved up, the top strip when it
+     * moved down, widened by [slack]. The next scan replaces it with real masks.
+     */
+    private fun placeShield(scrolled: Int, slack: Int) {
+        val area = shieldArea
+        val moved = scrolled - masksScrolledAt
+        // Once up, the shield stays and only resizes as scans land, so it doesn't blink at scan rate.
+        if (area == null || moved == 0 || (!shieldShown && SystemClock.uptimeMillis() - scannedAt < SHIELD_DELAY_MS)) {
+            if (shieldShown) windowManager.removeViewImmediate(shield)
+            shieldShown = false
+            return
+        }
+        val reach = Math.abs(moved) + slack
+        if (moved > 0) span.set(area.left, maxOf(area.top, area.bottom - reach), area.right, area.bottom)
+        else span.set(area.left, area.top, area.right, minOf(area.bottom, area.top + reach))
+        val params = shieldParams
+        if (shieldShown && params.x == span.left && params.y == span.top && params.width == span.width() && params.height == span.height()) return
+        params.x = span.left
+        params.y = span.top
+        params.width = span.width()
+        params.height = span.height()
+        if (shieldShown) windowManager.updateViewLayout(shield, params) else windowManager.addView(shield, params)
+        shieldShown = true
     }
 
     fun clear() {
         hidePanel()
         renderMasks(emptyList(), 0, 0, 0)
+        shieldArea = null
+        placeShield(0, 0)
         renderTabs(emptyList())
         setChip(null)
     }
@@ -262,3 +312,6 @@ internal class OverlayManager(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) setFitInsetsTypes(0)
     }
 }
+
+/** How long a scan may run during a scroll before the strip it hasn't read gets covered. */
+private const val SHIELD_DELAY_MS = 80L
