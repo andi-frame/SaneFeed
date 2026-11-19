@@ -25,14 +25,49 @@
     <string name="overlay_short_video_body">SaneFeed blocks this screen. You can change this in SaneFeed under Feed.</string>
     <string name="overlay_leave_app">Leave app</string>
 
-    <!-- Settings -->
-    <string name="section_service">Service</string>
-    <string name="service_title">Accessibility service</string>
-    <string name="service_on">On for X and Instagram</string>
-    <string name="service_off">Off. Nothing is blocked or counted.</string>
-    <string name="service_turn_on">Turn on</string>
-    <string name="service_manage">Settings</string>
+    <!-- Setup and health -->
+    <string name="section_setup">Setup</string>
+    <string name="setup_ready">Ready · %1$s</string>
+    <string name="setup_ready_no_apps">Ready · install X or Instagram</string>
+    <string name="setup_not_ready_off">Not ready · turn on the accessibility service</string>
+    <string name="setup_not_ready_not_connected">Not ready · the service is on but not running</string>
+    <string name="setup_part_working">working on %1$s</string>
+    <string name="setup_part_not_seen">not seen on %1$s yet</string>
+    <string name="setup_part_no_posts">no posts recognized on %1$s</string>
+    <string name="setup_part_error">last scan failed on %1$s</string>
+    <string name="setup_separator">", "</string>
+    <string name="state_done">Done</string>
+    <string name="state_needed">Needed</string>
+    <string name="state_recommended">Recommended</string>
+    <string name="state_manual">Check</string>
+    <string name="action_open_settings">Open settings</string>
+    <string name="action_app_info">App info</string>
+    <string name="check_accessibility_title">Accessibility service</string>
+    <string name="check_accessibility_required">Without it nothing is blocked, hidden or counted.</string>
+    <string name="check_accessibility_done">On and running for X and Instagram</string>
+    <string name="check_accessibility_not_connected">Turned on, but Android hasn\'t started it. Turn SaneFeed off and on again in Accessibility settings.</string>
+    <string name="check_restricted_hint">If Android says the setting is restricted: open App info, tap ⋮, then Allow restricted settings, and try again.</string>
+    <string name="check_battery_title">Battery optimization off</string>
+    <string name="check_battery_needed">Stops Android from pausing SaneFeed in the background. Find SaneFeed and choose Don\'t optimize or No restrictions.</string>
+    <string name="check_battery_done">SaneFeed isn\'t paused to save battery</string>
+    <string name="check_autostart_title">Autostart</string>
+    <string name="check_autostart_body">Xiaomi phones can stop SaneFeed after a restart unless Autostart is on. Android doesn\'t let apps check this, so turn it on for SaneFeed yourself.</string>
+    <string name="app_not_installed">Not installed</string>
+    <string name="app_version">%1$s %2$s</string>
+    <string name="verdict_off">Off · turn on the accessibility service</string>
+    <string name="verdict_not_connected">Not running · turn the service off and on again</string>
+    <string name="verdict_not_seen">Not seen yet · open %1$s and scroll for a few seconds</string>
+    <string name="verdict_no_posts">No posts recognized in %1$d scans. Open the home feed and scroll. If this stays, the selectors may be outdated for %2$s %3$s.</string>
+    <plurals name="verdict_working">
+        <item quantity="one">Working · last checked %2$s · %1$d post recognized</item>
+        <item quantity="other">Working · last checked %2$s · %1$d posts recognized</item>
+    </plurals>
+    <string name="verdict_error">Last scan failed %1$s: %2$s</string>
+    <string name="diagnostics_title">Copy diagnostic report</string>
+    <string name="diagnostics_summary">Versions, setup and health counters. No handles or post content.</string>
+    <string name="diagnostics_copied">Copied to the clipboard</string>
 
+    <!-- Settings -->
     <string name="section_today">Today</string>
     <string name="today_count">%1$d of %2$d posts today</string>
     <string name="today_limit">Limit %1$d</string>

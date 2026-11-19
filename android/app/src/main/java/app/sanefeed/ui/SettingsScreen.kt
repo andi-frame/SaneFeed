@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -37,11 +36,12 @@ import app.sanefeed.core.Handles
 import app.sanefeed.core.Platform
 import app.sanefeed.data.BuzzerSyncWorker
 import app.sanefeed.data.Settings
+import app.sanefeed.health.PermissionState
 
 @Composable
 fun SettingsScreen(
     graph: AppGraph,
-    serviceEnabled: Boolean,
+    permissions: PermissionState,
     onTurnOn: () -> Unit,
     onReport: () -> Unit,
     onReview: () -> Unit,
@@ -52,20 +52,7 @@ fun SettingsScreen(
     var editingServer by rememberSaveable { mutableStateOf(false) }
 
     Page(stringResource(R.string.app_name), onBack = null) {
-        SectionHeader(stringResource(R.string.section_service))
-        Group {
-            SettingRow(
-                title = stringResource(R.string.service_title),
-                summary = stringResource(if (serviceEnabled) R.string.service_on else R.string.service_off),
-                trailing = {
-                    if (serviceEnabled) {
-                        TextButton(onClick = onTurnOn) { Text(stringResource(R.string.service_manage)) }
-                    } else {
-                        Button(onClick = onTurnOn) { Text(stringResource(R.string.service_turn_on)) }
-                    }
-                },
-            )
-        }
+        SetupSection(graph, permissions, onTurnOn)
 
         SectionHeader(stringResource(R.string.section_today))
         Group {

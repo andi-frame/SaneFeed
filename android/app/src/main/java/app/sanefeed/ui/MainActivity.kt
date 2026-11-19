@@ -1,13 +1,10 @@
 package app.sanefeed.ui
 
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
-import android.view.accessibility.AccessibilityManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -19,55 +16,50 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import app.sanefeed.AppGraph
 import app.sanefeed.SaneFeedApp
-import app.sanefeed.accessibility.SaneFeedAccessibilityService
 import app.sanefeed.data.BuzzerSyncWorker
+import app.sanefeed.health.PermissionState
+import app.sanefeed.health.Permissions
 
 class MainActivity : ComponentActivity() {
     private lateinit var graph: AppGraph
-    private var serviceEnabled by mutableStateOf(false)
+    private var permissions by mutableStateOf<PermissionState?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         graph = (application as SaneFeedApp).graph
         if (savedInstanceState == null) BuzzerSyncWorker.syncNow(this, force = false)
+        permissions = Permissions.read(this)
         setContent {
             SaneFeedTheme {
-                App(graph, serviceEnabled, ::openAccessibilitySettings)
+                permissions?.let { App(graph, it, ::openAccessibilitySettings) }
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        serviceEnabled = isServiceEnabled()
+        // Everything here can change in Settings while SaneFeed is in the background.
+        permissions = Permissions.read(this)
         graph.counter.refresh()
     }
 
-    private fun isServiceEnabled(): Boolean {
-        val manager = getSystemService(AccessibilityManager::class.java)
-        return manager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK).any {
-            val info = it.resolveInfo.serviceInfo
-            info.packageName == packageName && info.name == SaneFeedAccessibilityService::class.java.name
-        }
-    }
-
     private fun openAccessibilitySettings() {
-        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        startActivity(Permissions.accessibilitySettings())
     }
 }
 
 private enum class Screen { SETTINGS, DISCLOSURE, REPORT, REVIEW }
 
 @Composable
-private fun App(graph: AppGraph, serviceEnabled: Boolean, openAccessibilitySettings: () -> Unit) {
+private fun App(graph: AppGraph, permissions: PermissionState, openAccessibilitySettings: () -> Unit) {
     var screen by rememberSaveable { mutableStateOf(Screen.SETTINGS) }
     val back = { screen = Screen.SETTINGS }
     BackHandler(enabled = screen != Screen.SETTINGS, onBack = back)
     when (screen) {
         Screen.SETTINGS -> SettingsScreen(
             graph = graph,
-            serviceEnabled = serviceEnabled,
+            permissions = permissions,
             onTurnOn = {
                 if (graph.settings.state.value.disclosureAccepted) openAccessibilitySettings() else screen = Screen.DISCLOSURE
             },

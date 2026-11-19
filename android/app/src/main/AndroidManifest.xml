@@ -3,6 +3,12 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Package visibility (Android 11+) for the installed-version rows of the setup checklist. -->
+    <queries>
+        <package android:name="com.twitter.android" />
+        <package android:name="com.instagram.android" />
+    </queries>
+
     <application
         android:name=".SaneFeedApp"
         android:allowBackup="false"
