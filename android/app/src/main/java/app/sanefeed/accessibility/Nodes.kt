@@ -1,7 +1,16 @@
 package app.sanefeed.accessibility
 
 import android.graphics.Rect
+import android.os.Build
 import android.view.accessibility.AccessibilityNodeInfo
+import java.util.IdentityHashMap
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Node queries that never throw: the target app can change its tree mid-scan, which surfaces as
@@ -72,17 +81,88 @@ internal object Nodes {
     fun coversScreen(node: AccessibilityNodeInfo, screen: Rect): Boolean =
         bounds(node).height() * 10 >= screen.height() * 6
 
-    private fun childCount(node: AccessibilityNodeInfo): Int = try {
+    fun childCount(node: AccessibilityNodeInfo): Int = try {
         node.childCount
     } catch (_: RuntimeException) {
         0
     }
 
-    private fun child(node: AccessibilityNodeInfo, index: Int): AccessibilityNodeInfo? = try {
-        node.getChild(index)
+    /**
+     * Children of each of [parents], all requested at once. While X scrolls it answers one request
+     * per gap between frames and invalidates the node cache many times a second, so a walk that
+     * asks node by node waits a frame per node; concurrent requests share the wait. They skip
+     * prefetching, whose results would be invalidated before use and only cost the app time.
+     */
+    fun childrenOfAll(parents: List<AccessibilityNodeInfo>): List<List<AccessibilityNodeInfo>> {
+        val jobs = parents.map { parent -> List(childCount(parent)) { i -> pool.submit<AccessibilityNodeInfo?> { child(parent, i, prefetch = false) } } }
+        return jobs.map { children -> children.mapNotNull(::await) }
+    }
+
+    /** Refreshes [nodes] at once (see [childrenOfAll]); false for nodes that are gone. */
+    fun refreshAll(nodes: List<AccessibilityNodeInfo>): List<Boolean> =
+        nodes.map { node -> pool.submit<Boolean> { refresh(node) } }.map { await(it) == true }
+
+    /**
+     * The subtrees below [roots], fetched a level at a time with [childrenOfAll]: about one wait
+     * per level instead of one per node. [descend] says whether to fetch a node's children; depth
+     * 1 is a root's child. Stops after about [maxNodes] nodes. Maps each fetched parent, by
+     * identity, to its children.
+     */
+    fun subtrees(
+        roots: List<AccessibilityNodeInfo>,
+        maxNodes: Int,
+        descend: (AccessibilityNodeInfo, Int) -> Boolean,
+    ): Map<AccessibilityNodeInfo, List<AccessibilityNodeInfo>> {
+        val fetched = IdentityHashMap<AccessibilityNodeInfo, List<AccessibilityNodeInfo>>()
+        var level = roots
+        var depth = 1
+        var count = 0
+        while (level.isNotEmpty() && count < maxNodes) {
+            val next = ArrayList<AccessibilityNodeInfo>()
+            childrenOfAll(level).forEachIndexed { i, children ->
+                fetched[level[i]] = children
+                count += children.size
+                children.filterTo(next) { descend(it, depth) }
+            }
+            level = next
+            depth++
+        }
+        return fetched
+    }
+
+    /** Child and refresh requests made so far; debug scan logs read the difference. */
+    val requests = AtomicInteger()
+
+    private fun child(node: AccessibilityNodeInfo, index: Int, prefetch: Boolean = true): AccessibilityNodeInfo? = try {
+        requests.incrementAndGet()
+        if (!prefetch && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) node.getChild(index, 0) else node.getChild(index)
     } catch (_: RuntimeException) {
         null
     }
+
+    private fun refresh(node: AccessibilityNodeInfo): Boolean = try {
+        requests.incrementAndGet()
+        node.refresh()
+    } catch (_: RuntimeException) {
+        false
+    }
+
+    private fun <T> await(job: Future<T>): T? = try {
+        job.get()
+    } catch (_: ExecutionException) {
+        null
+    }
+
+    /** Threads idle out a few seconds after the last scan. */
+    private val pool: ExecutorService by lazy {
+        val threads = AtomicInteger()
+        ThreadPoolExecutor(PARALLEL_REQUESTS, PARALLEL_REQUESTS, 5, TimeUnit.SECONDS, LinkedBlockingQueue()) { task ->
+            Thread(task, "sanefeed-fetch-${threads.incrementAndGet()}")
+        }.apply { allowCoreThreadTimeOut(true) }
+    }
+
+    /** Enough for every row of a screen at once without flooding the app's UI thread. */
+    private const val PARALLEL_REQUESTS = 12
 
     private inline fun visible(query: () -> List<AccessibilityNodeInfo>?): List<AccessibilityNodeInfo> =
         safe(query).filter { it.isVisibleToUser }

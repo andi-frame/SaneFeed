@@ -20,14 +20,17 @@ class MaskMotionTest {
     fun `edge on the clip boundary stays pinned because the item continues past it`() {
         // Clipped at the top: scrolling down reveals more of it above, so the mask keeps the top.
         assertEquals(Span(300, 1000), MaskMotion.place(300, 800, 300, 2400, scrolled = -200, slack = 0))
-        // Clipped at the bottom: scrolling up brings more of it in from below.
-        assertEquals(Span(1800, 2400), MaskMotion.place(2000, 2400, 300, 2400, scrolled = 200, slack = 0))
+        // Clipped at the bottom: scrolling up brings more of it in from below, where the bottom bar slides away.
+        assertEquals(Span(1800, 2600), MaskMotion.place(2000, 2400, 300, 2400, scrolled = 200, slack = 0))
     }
 
     @Test
-    fun `mask never leaves the clip`() {
-        assertEquals(Span(300, 500), MaskMotion.place(400, 900, 300, 2400, scrolled = 400, slack = 0))
-        assertNull(MaskMotion.place(400, 900, 300, 2400, scrolled = 700, slack = 0))
+    fun `mask leaves the clip only by as much as the bars slid away`() {
+        // Content moving up slides the app bar away by as much, uncovering the item under it.
+        assertEquals(Span(0, 500), MaskMotion.place(400, 900, 300, 2400, scrolled = 400, slack = 0))
+        assertEquals(Span(100, 600), MaskMotion.place(400, 900, 300, 2400, scrolled = 300, slack = 0))
+        assertNull(MaskMotion.place(400, 900, 300, 2400, scrolled = 1200, slack = 0))
+        // Content moving down brings the bars back over the list: the clip holds.
         assertEquals(Span(1700, 2400), MaskMotion.place(1600, 2300, 300, 2400, scrolled = -200, slack = 100))
     }
 

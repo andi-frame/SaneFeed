@@ -12,12 +12,17 @@ object MaskMotion {
      * The mask for an item last scanned at [top]..[bottom] in a list visible over
      * [clipTop]..[clipBottom], after the list content moved up by [scrolled] px. An edge on the
      * clip boundary is open: the item continues past it, so that edge stays pinned to the
-     * boundary. [slack] widens the other edges to cover motion until the next update. Null when
-     * nothing of the item is left on screen.
+     * boundary. [slack] widens the other edges to cover motion until the next update. X and
+     * Instagram slide their bars away as content moves up, by as much as it moved, so the clip
+     * grows by that much until the next scan measures the bars again. Null when nothing of the
+     * item is left on screen.
      */
     fun place(top: Int, bottom: Int, clipTop: Int, clipBottom: Int, scrolled: Int, slack: Int): Span? {
-        val newTop = if (top <= clipTop) clipTop else maxOf(clipTop, top - scrolled - slack)
-        val newBottom = if (bottom >= clipBottom) clipBottom else minOf(clipBottom, bottom - scrolled + slack)
+        val reveal = maxOf(scrolled, 0)
+        val shownTop = maxOf(0, clipTop - reveal)
+        val shownBottom = clipBottom + reveal
+        val newTop = if (top <= clipTop) shownTop else maxOf(shownTop, top - scrolled - slack)
+        val newBottom = if (bottom >= clipBottom) shownBottom else minOf(shownBottom, bottom - scrolled + slack)
         return if (newTop < newBottom) Span(newTop, newBottom) else null
     }
 

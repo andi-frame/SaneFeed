@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.view.ContextThemeWrapper
 import android.view.Gravity
@@ -34,6 +36,8 @@ internal class Frame(
     val viewport: Rect? = null,
     /** Cover list content revealed by scrolling that no scan has read yet (see [OverlayManager.follow]). */
     val shield: Boolean = false,
+    /** Px the scan saw the main list move its content up since the previous scan, if it could tell. */
+    val moved: Int? = null,
 )
 
 internal enum class Panel { LIMIT, SHORT_VIDEO, BLOCKED }
@@ -74,6 +78,11 @@ internal class OverlayManager(
     private var shieldArea: Rect? = null
     private var scannedAt = 0L
 
+    /** When the list came to rest with the shield up, uptime millis; 0 while it moves. */
+    private var restingSince = 0L
+    private val main = Handler(Looper.getMainLooper())
+    private val restShield = Runnable(::hideShield)
+
     val isShowing: Boolean get() = panelShown != null || chipShown || masks.isNotEmpty() || tabs.isNotEmpty() || shieldShown
 
     /** [scrolled] and [slack] are as in [follow]. */
@@ -109,19 +118,25 @@ internal class OverlayManager(
     }
 
     /**
-     * Shows the shield once a scan has taken [SHIELD_DELAY_MS] without covering what the list
-     * revealed since it started: the bottom strip when content moved up, the top strip when it
-     * moved down, widened by [slack]. The next scan replaces it with real masks.
+     * Shows the shield once a scan has taken [SHIELD_DELAY_MS] while the list moves without
+     * covering what it revealed since that scan started: the bottom strip when content moved up,
+     * the top strip when it moved down, widened by [slack]. The next scan replaces it with real
+     * masks. Once the list rests ([slack] 0) the shield stays at most [SHIELD_REST_MS], so a slow
+     * scan can't leave posts blanked.
      */
     private fun placeShield(scrolled: Int, slack: Int) {
         val area = shieldArea
         val moved = scrolled - masksScrolledAt
+        val now = SystemClock.uptimeMillis()
+        if (slack > 0) restingSince = 0 else if (restingSince == 0L) restingSince = now
+        val rested = restingSince != 0L && now - restingSince >= SHIELD_REST_MS
         // Once up, the shield stays and only resizes as scans land, so it doesn't blink at scan rate.
-        if (area == null || moved == 0 || (!shieldShown && SystemClock.uptimeMillis() - scannedAt < SHIELD_DELAY_MS)) {
-            if (shieldShown) windowManager.removeViewImmediate(shield)
-            shieldShown = false
+        if (area == null || moved == 0 || rested || (!shieldShown && (slack == 0 || now - scannedAt < SHIELD_DELAY_MS))) {
+            hideShield()
             return
         }
+        main.removeCallbacks(restShield)
+        if (slack == 0) main.postDelayed(restShield, SHIELD_REST_MS - (now - restingSince))
         val reach = Math.abs(moved) + slack
         if (moved > 0) span.set(area.left, maxOf(area.top, area.bottom - reach), area.right, area.bottom)
         else span.set(area.left, area.top, area.right, minOf(area.bottom, area.top + reach))
@@ -133,6 +148,12 @@ internal class OverlayManager(
         params.height = span.height()
         if (shieldShown) windowManager.updateViewLayout(shield, params) else windowManager.addView(shield, params)
         shieldShown = true
+    }
+
+    private fun hideShield() {
+        main.removeCallbacks(restShield)
+        if (shieldShown) windowManager.removeViewImmediate(shield)
+        shieldShown = false
     }
 
     fun clear() {
@@ -315,3 +336,6 @@ internal class OverlayManager(
 
 /** How long a scan may run during a scroll before the strip it hasn't read gets covered. */
 private const val SHIELD_DELAY_MS = 80L
+
+/** How long the shield may stay once the list has stopped (on top of the service's settle delay); the next scan usually lands sooner. */
+private const val SHIELD_REST_MS = 100L

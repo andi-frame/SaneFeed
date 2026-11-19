@@ -21,8 +21,13 @@ class ScreenScan(
     val blockedTabs: List<Rect>,
     /** Account whose profile or story fills the screen, if any. */
     val owner: String? = null,
-    /** Visible area of the main scrolling list (bars excluded), when one was found. */
+    /**
+     * Visible area of the main scrolling list (bars excluded), when one was found. Its top is the
+     * lowest the bars above it reach on this screen, so it may start below a bar that slid away.
+     */
     val viewport: Rect? = null,
+    /** Px the main list moved its content up since the previous scan, when both read part of it. */
+    val moved: Int? = null,
 )
 
 /**
@@ -33,6 +38,9 @@ class ScreenScan(
 interface PlatformAdapter {
     val platform: Platform
 
-    /** Called on the scan thread only. [screen] is the bounds of [root]'s window. */
-    fun scan(root: AccessibilityNodeInfo, screen: Rect): ScreenScan
+    /**
+     * Called on the scan thread only. [screen] is the bounds of [root]'s window. [scrolling]: the
+     * app reported scrolling since the last scan.
+     */
+    fun scan(root: AccessibilityNodeInfo, screen: Rect, scrolling: Boolean): ScreenScan
 }

@@ -23,7 +23,7 @@ class InstagramAdapter : PlatformAdapter {
     /** Feed posts from the previous scan, top to bottom; lets a post whose header scrolled away keep its area. */
     private var previous: List<FeedLayout.Post> = emptyList()
 
-    override fun scan(root: AccessibilityNodeInfo, screen: Rect): ScreenScan {
+    override fun scan(root: AccessibilityNodeInfo, screen: Rect, scrolling: Boolean): ScreenScan {
         val reelsTab = Nodes.firstById(root, S.REELS_TAB) ?: Nodes.bottomTab(root, screen, S.REELS_TAB_LABELS)
         val tabs = listOfNotNull(reelsTab?.let(Nodes::bounds))
         val onReels = reelsTab?.isSelected == true || Nodes.byId(root, S.REELS_VIEWER).any { Nodes.coversScreen(it, screen) }
