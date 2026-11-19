@@ -1,0 +1,23 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Android / Gradle
+.gradle/
+build/
+local.properties
+captures/
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Node / Bun
+node_modules/
+*.sqlite
+*.sqlite-*
+*.db
+.env
