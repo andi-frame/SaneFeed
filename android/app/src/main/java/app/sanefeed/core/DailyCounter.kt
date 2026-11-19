@@ -41,6 +41,15 @@ class DailyCounter(
         return true
     }
 
+    /** Overwrites today's count, keeping the posts already seen; for the debug test hooks. */
+    @Synchronized
+    fun setCount(platform: Platform, count: Int) {
+        val state = current(platform)
+        state.count = count.coerceAtLeast(0)
+        store.save(platform, Day(state.date, state.count, state.keys.toList()))
+        publish()
+    }
+
     @Synchronized
     fun count(platform: Platform): Int = current(platform).count
 

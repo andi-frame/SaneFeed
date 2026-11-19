@@ -13,6 +13,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.core.content.ContextCompat
+import app.sanefeed.SaneFeedApp
+import app.sanefeed.core.Platform
 
 /**
  * Debug builds only: drives the phone through the service so on-device checks work where shell
@@ -24,6 +26,8 @@ import androidx.core.content.ContextCompat
  * `adb shell am broadcast -a app.sanefeed.debug.TEXT --es text hamidofx1` (into the focused field)
  * `adb shell am broadcast -a app.sanefeed.debug.TREE` (logs the active window under tag SaneFeedTree,
  *   including the fields `uiautomator dump` leaves out)
+ * `adb shell am broadcast -a app.sanefeed.debug.COUNT --es platform x --ei count 0` (today's count)
+ * `adb shell am broadcast -a app.sanefeed.debug.LIMIT --es platform x --ei limit 100` (daily limit)
  *
  * SWIPE also takes `x` (default: screen centre); TAP takes `ms` (default 50).
  */
@@ -34,6 +38,8 @@ internal object TestHooks {
     private const val TEXT = "app.sanefeed.debug.TEXT"
     private const val TREE = "app.sanefeed.debug.TREE"
     private const val TREE_TAG = "SaneFeedTree"
+    private const val COUNT = "app.sanefeed.debug.COUNT"
+    private const val LIMIT = "app.sanefeed.debug.LIMIT"
 
     private var receiver: BroadcastReceiver? = null
 
@@ -62,6 +68,15 @@ internal object TestHooks {
                         },
                     )
                     TREE -> service.rootInActiveWindow?.let { log(it, 0) }
+                    COUNT, LIMIT -> {
+                        val graph = (service.application as SaneFeedApp).graph
+                        val platform = Platform.fromId(intent.getStringExtra("platform")) ?: return
+                        if (intent.action == COUNT) {
+                            graph.counter.setCount(platform, intent.getIntExtra("count", 0))
+                        } else {
+                            graph.settings.setLimit(platform, intent.getIntExtra("limit", 0))
+                        }
+                    }
                 }
             }
         }
@@ -71,6 +86,8 @@ internal object TestHooks {
             addAction(BACK)
             addAction(TEXT)
             addAction(TREE)
+            addAction(COUNT)
+            addAction(LIMIT)
         }
         ContextCompat.registerReceiver(service, hook, filter, android.Manifest.permission.DUMP, null, ContextCompat.RECEIVER_EXPORTED)
         receiver = hook
