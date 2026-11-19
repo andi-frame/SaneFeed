@@ -35,6 +35,12 @@ class MaskMotionTest {
     }
 
     @Test
+    fun `before the list is known to move, a mask under a bar reaches past it by the slack`() {
+        // A fling has started but no motion is measured yet: the app bar may already be sliding away.
+        assertEquals(Span(0, 1100), MaskMotion.place(300, 800, 300, 2400, scrolled = 0, slack = 300))
+    }
+
+    @Test
     fun `slack is zero at rest`() {
         assertEquals(0, MaskMotion.slack(0))
         assertEquals(MaskMotion.slack(-150), MaskMotion.slack(150))
