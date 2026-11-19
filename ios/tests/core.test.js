@@ -121,7 +121,7 @@ describe("settings", () => {
       dailyLimits: { x: 50, instagram: 50 },
       blockReels: true,
       heuristic: true,
-      serverUrl: "https://api.sanefeed.app",
+      serverUrl: "https://api.sanefeed.byhan.id",
       manualList: [],
     });
   });
@@ -137,7 +137,7 @@ describe("settings", () => {
     expect(s.dailyLimits).toEqual({ x: 1, instagram: 50 });
     expect(s.blockReels).toBe(false);
     expect(s.heuristic).toBe(true);
-    expect(s.serverUrl).toBe("https://api.sanefeed.app");
+    expect(s.serverUrl).toBe("https://api.sanefeed.byhan.id");
     expect(s.manualList).toEqual([{ platform: "x", handle: "me" }]);
   });
 

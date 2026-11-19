@@ -49,7 +49,7 @@ Desktop check without a Mac: load `ios/SaneFeedExtension` as an unpacked extensi
 
 ## Server
 
-The default server is `https://api.sanefeed.app` (granted in `host_permissions`). Another server URL can be set in Settings > Shared buzzer list; the extension then asks for access to that origin (`optional_host_permissions`). If access is declined, requests still work when the server sends CORS headers.
+The default server is `https://api.sanefeed.byhan.id` (granted in `host_permissions`). Another server URL can be set in Settings > Shared buzzer list; the extension then asks for access to that origin (`optional_host_permissions`). If access is declined, requests still work when the server sends CORS headers.
 
 Endpoints used: `GET /v1/buzzers` (with `If-None-Match`), `POST /v1/reports`, `GET /v1/reports?platform=…`, `POST /v1/reports/{id}/votes`. Report and vote requests carry `X-Client-Id`, a random UUID generated once per install and kept in `storage.local`.
 

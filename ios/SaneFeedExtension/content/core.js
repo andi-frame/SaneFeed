@@ -15,7 +15,7 @@
     instagram: /^[a-z0-9._]{1,30}$/,
   });
   const HEURISTIC = /\d{6,}$/;
-  const DEFAULT_SERVER_URL = "https://api.sanefeed.app";
+  const DEFAULT_SERVER_URL = "https://api.sanefeed.byhan.id";
   const DEFAULT_LIMIT = 50;
   const MIN_LIMIT = 1;
   const MAX_LIMIT = 1000;

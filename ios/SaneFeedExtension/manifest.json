@@ -23,7 +23,7 @@
     "service_worker": "background.js"
   },
   "permissions": ["storage", "alarms"],
-  "host_permissions": ["https://api.sanefeed.app/*"],
+  "host_permissions": ["https://api.sanefeed.byhan.id/*"],
   "optional_host_permissions": ["https://*/*", "http://*/*"],
   "content_scripts": [
     {
