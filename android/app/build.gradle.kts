@@ -3,8 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// Release default server; override with -PsanefeedServerUrl=https://... or in the app.
-val releaseServerUrl = providers.gradleProperty("sanefeedServerUrl").getOrElse("https://api.sanefeed.byhan.id")
+// Default server for every build; for a local server pass -PsanefeedServerUrl=http://127.0.0.1:8787
+// (debug builds allow plain HTTP) and run `adb reverse tcp:8787 tcp:8787`.
+val serverUrl = providers.gradleProperty("sanefeedServerUrl").getOrElse("https://api.sanefeed.byhan.id")
 
 android {
     namespace = "app.sanefeed"
@@ -16,18 +17,14 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
+        buildConfigField("String", "DEFAULT_SERVER_URL", "\"$serverUrl\"")
     }
 
     buildTypes {
-        debug {
-            // Reached on emulators and USB phones alike via `adb reverse tcp:8787 tcp:8787`.
-            buildConfigField("String", "DEFAULT_SERVER_URL", "\"http://127.0.0.1:8787\"")
-        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
-            buildConfigField("String", "DEFAULT_SERVER_URL", "\"$releaseServerUrl\"")
         }
     }
 

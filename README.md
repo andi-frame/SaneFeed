@@ -21,7 +21,7 @@ iOS sandboxing forbids any app from reading or drawing over another app's UI, so
 
 ```sh
 cd server && ADMIN_TOKEN=change-me bun run start     # http://localhost:8787
-cd android && ./gradlew :app:installDebug && adb reverse tcp:8787 tcp:8787   # debug app talks to 127.0.0.1:8787
+cd android && ./gradlew :app:installDebug             # talks to https://api.sanefeed.byhan.id
 cd ios && bun test                                    # extension logic tests
 ```
 

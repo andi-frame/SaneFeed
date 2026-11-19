@@ -16,7 +16,7 @@ Requirements: JDK 17 or newer, Android SDK with platform 36. `local.properties` 
 ./gradlew :app:installDebug
 ```
 
-Release builds use R8 and resource shrinking. They default to `https://api.sanefeed.byhan.id`; override with `-PsanefeedServerUrl=https://your.server` or set the URL in the app. Debug builds default to `http://127.0.0.1:8787`; run `adb reverse tcp:8787 tcp:8787` so the phone or emulator reaches the server on your computer. Plain HTTP is allowed in debug builds only.
+Release builds use R8 and resource shrinking. All builds default to `https://api.sanefeed.byhan.id`; the URL can also be changed in the app. For a local server, build with `-PsanefeedServerUrl=http://127.0.0.1:8787` and run `adb reverse tcp:8787 tcp:8787` so the phone or emulator reaches your computer. Plain HTTP is allowed in debug builds only.
 
 ## Turn on the service
 
