@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="sf_background">#FF121413</color>
+    <color name="sf_surface">#FF1B1D1C</color>
+    <color name="sf_on_surface">#FFE4E5E3</color>
+    <color name="sf_on_surface_variant">#FFA9ADAA</color>
+    <color name="sf_outline">#FF3A3E3C</color>
+    <color name="sf_accent">#FF8DB5A6</color>
+    <color name="sf_on_accent">#FF0F2A22</color>
+</resources>

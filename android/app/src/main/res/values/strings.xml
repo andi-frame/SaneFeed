@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SaneFeed</string>
+
+    <string name="accessibility_service_label">SaneFeed</string>
+    <string name="accessibility_service_description">Works only inside X and Instagram. Reads account handles and the position of posts on screen to hide accounts on your buzzer list, block Reels and video tabs, and count posts seen today. Nothing you see leaves your phone.</string>
+
+    <string name="action_back">Back</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="handle_format">\@%1$s</string>
+    <string name="handle_invalid_x">Up to 15 letters, numbers or underscores</string>
+    <string name="handle_invalid_instagram">Up to 30 letters, numbers, periods or underscores</string>
+    <string name="error_network">Couldn\'t reach the server</string>
+    <string name="error_bad_response">The server sent a response this app can\'t read</string>
+
+    <!-- Overlays -->
+    <string name="overlay_hidden">Hidden · \@%1$s is on your buzzer list</string>
+    <string name="overlay_tab_off">Off</string>
+    <string name="overlay_chip">%1$d of %2$d</string>
+    <string name="overlay_limit_title">Daily limit reached</string>
+    <string name="overlay_limit_body">You\'ve seen %1$d of %2$d posts on %3$s today. Resets at midnight.</string>
+    <string name="overlay_reels_title">Reels are off</string>
+    <string name="overlay_video_title">Video is off</string>
+    <string name="overlay_short_video_body">SaneFeed blocks this screen. You can change this in SaneFeed under Feed.</string>
+    <string name="overlay_leave_app">Leave app</string>
+
+    <!-- Settings -->
+    <string name="section_service">Service</string>
+    <string name="service_title">Accessibility service</string>
+    <string name="service_on">On for X and Instagram</string>
+    <string name="service_off">Off. Nothing is blocked or counted.</string>
+    <string name="service_turn_on">Turn on</string>
+    <string name="service_manage">Settings</string>
+
+    <string name="section_today">Today</string>
+    <string name="today_count">%1$d of %2$d posts today</string>
+    <string name="today_limit">Limit %1$d</string>
+    <string name="today_footer">A post counts once, when at least half of it is on screen. Hidden posts don\'t count. Resets at midnight.</string>
+    <string name="limit_dialog_title">Daily limit for %1$s</string>
+    <string name="limit_dialog_label">Posts per day</string>
+    <string name="limit_dialog_range">%1$d to %2$d</string>
+
+    <string name="section_feed">Feed</string>
+    <string name="block_reels_title">Block Reels and video</string>
+    <string name="block_reels_summary">Goes back from Reels and X\'s video viewer, and covers their tabs</string>
+    <string name="heuristic_title">Hide likely buzzer accounts</string>
+    <string name="heuristic_summary">Handles ending in 6 or more digits, like budi83749201</string>
+    <string name="chip_title">Show post counter</string>
+    <string name="chip_summary">Small counter at the top of X and Instagram</string>
+
+    <string name="section_buzzers">Buzzer list</string>
+    <string name="sync_title">Server list</string>
+    <plurals name="sync_summary">
+        <item quantity="one">%1$d account · synced %2$s</item>
+        <item quantity="other">%1$d accounts · synced %2$s</item>
+    </plurals>
+    <string name="sync_never">Not synced yet</string>
+    <string name="sync_running">Syncing…</string>
+    <string name="sync_waiting">Waiting for a connection</string>
+    <string name="sync_failed">%1$s · last sync failed: %2$s</string>
+    <string name="sync_now">Sync now</string>
+    <string name="server_title">Server</string>
+    <string name="server_unset">Not set</string>
+    <string name="server_label">Server URL</string>
+    <string name="server_help">For example https://sanefeed.example.org</string>
+
+    <string name="section_manual">Your blocklist</string>
+    <string name="manual_handle_label">Handle</string>
+    <string name="manual_add">Add</string>
+    <string name="manual_remove">Remove</string>
+    <string name="manual_empty">Posts from accounts you add here are hidden. Stored on this phone only.</string>
+
+    <!-- Disclosure -->
+    <string name="disclosure_title">Before you turn it on</string>
+    <string name="disclosure_intro">SaneFeed uses Android\'s accessibility service to see what X and Instagram show on screen. Android requires your permission for this.</string>
+    <string name="disclosure_reads_title">What it reads</string>
+    <string name="disclosure_reads_body">Account handles on posts, where posts are on screen, and whether a Reels or video screen is open. Only inside X and Instagram. It doesn\'t read messages or anything you type.</string>
+    <string name="disclosure_does_title">What it does</string>
+    <string name="disclosure_does_body">Covers posts from accounts on your buzzer lists, covers the Reels and video tabs, counts posts you\'ve seen today, and shows a screen when you reach your limit. It presses Back when Reels open and Home when you tap Leave app.</string>
+    <string name="disclosure_network_title">What leaves your phone</string>
+    <string name="disclosure_network_body">Nothing you see or do. The app only downloads the buzzer list from the server. Reports and votes are sent only when you submit them, with a random install ID and no account.</string>
+    <string name="disclosure_control_title">Turning it off</string>
+    <string name="disclosure_control_body">Turn SaneFeed off at any time in Settings > Accessibility. Counts and your blocklist stay on this phone.</string>
+    <string name="disclosure_agree">Agree and open Accessibility settings</string>
+    <string name="disclosure_decline">Not now</string>
+
+    <!-- Report -->
+    <string name="report_title">Report an account</string>
+    <string name="report_summary">Send evidence for review. Reports don\'t add accounts to the list on their own.</string>
+    <string name="report_intro">Reviewers check every report before an account is added to the shared list. Give a clear reason and links that show the behavior.</string>
+    <string name="report_reason_label">Reason</string>
+    <string name="report_reason_help">What the account does and why it looks coordinated</string>
+    <string name="report_reason_short">At least %1$d characters</string>
+    <string name="report_reason_long">At most %1$d characters</string>
+    <string name="report_reason_count">%1$d / %2$d</string>
+    <string name="report_proofs_title">Proof links</string>
+    <string name="report_proofs_help">1 to %1$d links to posts, archived pages or hosted screenshots. https only.</string>
+    <string name="report_proof_label">Link %1$d</string>
+    <string name="report_add_proof">Add another link</string>
+    <string name="report_send">Send report</string>
+    <string name="report_sending">Sending…</string>
+    <string name="report_sent">Report sent. Case #%1$d is waiting for review.</string>
+    <string name="report_appended">Added to case #%1$d, which is already waiting for review.</string>
+    <string name="report_failed">Couldn\'t send: %1$s</string>
+    <string name="proof_empty">Enter a link or remove this field</string>
+    <string name="proof_too_long">At most %1$d characters</string>
+    <string name="proof_not_https">Must be an https:// link</string>
+    <string name="proof_duplicate">Same link as above</string>
+
+    <!-- Review -->
+    <string name="review_title">Review reports</string>
+    <string name="review_summary">Agree or disagree with open reports</string>
+    <string name="review_intro">Open reports, most likely first. Check the links before you vote. Votes help reviewers decide; they don\'t add accounts on their own.</string>
+    <string name="review_refresh">Refresh</string>
+    <string name="review_loading">Loading…</string>
+    <string name="review_empty">No open reports.</string>
+    <string name="review_load_failed">Couldn\'t load reports: %1$s</string>
+    <string name="review_more">Load more</string>
+    <plurals name="review_stats">
+        <item quantity="one">%1$d reporter · %2$d agree · %3$d disagree</item>
+        <item quantity="other">%1$d reporters · %2$d agree · %3$d disagree</item>
+    </plurals>
+    <string name="review_agree">Agree</string>
+    <string name="review_disagree">Disagree</string>
+    <string name="review_sending">Sending…</string>
+    <string name="review_own">You reported this account, so you can\'t vote on it.</string>
+    <string name="review_closed">This report is no longer open.</string>
+    <string name="review_no_browser">No app can open this link.</string>
+</resources>
