@@ -11,6 +11,7 @@ import app.sanefeed.data.BuzzerSyncWorker
 import app.sanefeed.data.PrefsCounterStore
 import app.sanefeed.data.Settings
 import app.sanefeed.data.edit
+import app.sanefeed.health.ServiceHealth
 import java.time.LocalDate
 import java.util.UUID
 
@@ -30,6 +31,7 @@ class AppGraph(context: Context) {
     val settings = Settings(context)
     val counter = DailyCounter(PrefsCounterStore(context), LocalDate::now)
     val blocklist = BlocklistRepository(context)
+    val health = ServiceHealth()
 
     /** Random per-install id sent as X-Client-Id; generated once, never tied to an account. */
     val clientId: String by lazy {

@@ -40,6 +40,9 @@ class SaneFeedAccessibilityService : AccessibilityService() {
     private var scanScheduled = false
     private val scanQueued = AtomicBoolean(false)
 
+    /** Written per event on main, read by the scan thread to attribute errors. */
+    @Volatile private var lastEventPlatform: Platform? = null
+
     private val dispatchScan = Runnable {
         scanScheduled = false
         if (scanQueued.compareAndSet(false, true)) scanHandler.post(scanTask)
@@ -49,8 +52,10 @@ class SaneFeedAccessibilityService : AccessibilityService() {
         scanQueued.set(false)
         val frame = try {
             buildFrame()
-        } catch (_: RuntimeException) {
-            null // The target app changed its tree mid-scan; fail safe and try again on the next event.
+        } catch (e: RuntimeException) {
+            // The target app changed its tree mid-scan; fail safe and try again on the next event.
+            lastEventPlatform?.let { graph.health.onError(it, e) }
+            null
         }
         main.post { render(frame) }
     }
@@ -62,11 +67,15 @@ class SaneFeedAccessibilityService : AccessibilityService() {
         graph = (application as SaneFeedApp).graph
         overlays = OverlayManager(this) { performGlobalAction(GLOBAL_ACTION_HOME) }
         connected = true
+        graph.health.connected()
         scanHandler.post { graph.blocklist.ensureLoaded() }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        if (Platform.fromPackage(event.packageName) != null) scheduleScan()
+        val platform = Platform.fromPackage(event.packageName) ?: return
+        lastEventPlatform = platform
+        graph.health.onEvent(platform)
+        scheduleScan()
     }
 
     override fun onInterrupt() = Unit
@@ -87,6 +96,7 @@ class SaneFeedAccessibilityService : AccessibilityService() {
         scanScheduled = false
         main.removeCallbacksAndMessages(null)
         if (::overlays.isInitialized) overlays.clear()
+        if (::graph.isInitialized) graph.health.cleared()
     }
 
     private fun scheduleScan() {
@@ -111,9 +121,12 @@ class SaneFeedAccessibilityService : AccessibilityService() {
         val limit = settings.limits.getValue(platform)
         val showChip = settings.counterChip
 
-        if (settings.blockReels && scan.isReelsScreen) {
-            leaveShortVideo()
-            return Frame(platform, Panel.SHORT_VIDEO, graph.counter.count(platform), limit, emptyList(), emptyList(), false)
+        if (scan.isReelsScreen) {
+            graph.health.onShortVideoScan(platform, blocked = settings.blockReels)
+            if (settings.blockReels) {
+                leaveShortVideo()
+                return Frame(platform, Panel.SHORT_VIDEO, graph.counter.count(platform), limit, emptyList(), emptyList(), false)
+            }
         }
         backsInARow = 0
 
@@ -122,6 +135,7 @@ class SaneFeedAccessibilityService : AccessibilityService() {
         for (post in scan.posts) {
             if (graph.isHidden(platform, post.handle)) {
                 masks += post
+                graph.health.onHidden(platform, post.key)
             } else if (count < limit &&
                 Visibility.isCountable(post.bounds.top, post.bounds.bottom, scan.viewport.top, scan.viewport.bottom) &&
                 graph.counter.record(platform, post.key)
@@ -129,6 +143,7 @@ class SaneFeedAccessibilityService : AccessibilityService() {
                 count++
             }
         }
+        if (!scan.isReelsScreen) graph.health.onFeedScan(platform, scan.candidates, scan.posts.size)
         val panel = if (count >= limit) Panel.LIMIT else null
         val tabs = if (settings.blockReels) scan.blockedTabs else emptyList()
         return Frame(platform, panel, count, limit, tabs, masks, showChip)
