@@ -1,0 +1,7 @@
+{
+  "name": "sanefeed-ios",
+  "private": true,
+  "scripts": {
+    "test": "bun test"
+  }
+}
