@@ -21,3 +21,6 @@ node_modules/
 *.sqlite-*
 *.db
 .env
+
+# Local code graph (graphify)
+graphify-out/
