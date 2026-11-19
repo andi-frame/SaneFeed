@@ -20,9 +20,25 @@ Release builds use R8 and resource shrinking. They default to `https://api.sanef
 
 ## Turn on the service
 
-1. Open SaneFeed and tap **Turn on**. Read the disclosure and tap **Agree and open Accessibility settings**.
+1. Open SaneFeed. The **Setup** section at the top lists what's still needed. Tap **Open settings** next to Accessibility service, read the disclosure and tap **Agree and open Accessibility settings**.
 2. In Android Settings → Accessibility, open **SaneFeed** (sometimes under "Downloaded apps" or "Installed apps") and turn it on.
-3. On Android 13 and newer, sideloaded apps can't turn on accessibility services until you allow it: Settings → Apps → SaneFeed → ⋮ → **Allow restricted settings**, then repeat step 2.
+3. On Android 13 and newer, sideloaded apps can't turn on accessibility services until you allow it: Settings → Apps → SaneFeed → ⋮ → **Allow restricted settings**, then repeat step 2. Setup shows this hint, with an **App info** button, when SaneFeed wasn't installed from Play.
+4. Recommended: turn off battery optimization for SaneFeed. On Xiaomi, Redmi and POCO phones, also turn on **Autostart**. Android has no API to read the Autostart switch, so Setup always lists it as a manual step on those phones.
+
+## Setup and health check
+
+Setup marks each item **Done**, **Needed**, **Recommended** or **Check**. Below the checklist, each app shows its installed version and whether SaneFeed is working there. It updates live while the screen is open:
+
+| Status | Meaning |
+|---|---|
+| Off | The accessibility service is turned off. |
+| Not running | It is on in Settings, but Android hasn't started it. Turn it off and on again. |
+| Not seen yet | No posts seen since the service started. Open the app and scroll. |
+| No posts recognized | 20+ feed scans found no post with a readable author. The selectors are probably outdated for that app version. |
+| Working | Time of the last scan and how many posts it recognized. |
+| Last scan failed | The most recent scan threw an error (shown); the next successful scan clears it. |
+
+The service records this in `health/ServiceHealth.kt`, in memory only. It is cleared when the service stops. **Copy diagnostic report** copies plain text: app, device and Android versions, X and Instagram versions, setup state, settings, and health counters per app. It never includes handles or post content.
 
 ## How it works
 
@@ -30,11 +46,11 @@ Release builds use R8 and resource shrinking. They default to `https://api.sanef
 - `accessibility/x/XAdapter.kt` and `accessibility/instagram/InstagramAdapter.kt` implement `PlatformAdapter`. Each one finds Reels/video screens, the posts on screen (author, stable key, bounds), and the tabs to cover.
 - `accessibility/OverlayManager.kt` draws `TYPE_ACCESSIBILITY_OVERLAY` windows and reuses them from a pool. Overlays are removed when their post leaves the screen or when X and Instagram are no longer on screen.
 - `data/BuzzerSyncWorker.kt` syncs the list every 6 hours on any network, and again each time the app is opened. It sends `If-None-Match`, so an unchanged list costs one 304. The list is cached in `filesDir/buzzers.json`.
-- `core/` holds plain Kotlin logic (handles, heuristic, counter, JSON mapping, validation). JVM unit tests in `app/src/test` cover it.
+- `core/` holds plain Kotlin logic (handles, heuristic, counter, JSON mapping, validation). `health/` holds the setup checks, health record, verdicts and diagnostic report. JVM unit tests in `app/src/test` cover both.
 
 ## Limits
 
-- **Selectors are fragile.** X and Instagram don't publish their view ids and rename them between releases. Every selector is in `accessibility/x/XSelectors.kt` and `accessibility/instagram/InstagramSelectors.kt`. Each list tries known view ids first, then content descriptions and text in English. If an app update breaks a selector, SaneFeed fails safe: nothing is hidden, blocked or counted for the parts that no longer match, and the app works as usual. Update the selector lists when that happens. Label fallbacks ("Reels", "Video") only work with English UI.
+- **Selectors are fragile.** X and Instagram don't publish their view ids and rename them between releases. Every selector is in `accessibility/x/XSelectors.kt` and `accessibility/instagram/InstagramSelectors.kt`. Each list tries known view ids first, then content descriptions and text in English. X 12.x is built with Jetpack Compose. Its posts are found by walking the tree for the `timeline_post` test tag, because id and text searches can't see Compose nodes. If an app update breaks a selector, SaneFeed fails safe: nothing is hidden, blocked or counted for the parts that no longer match, and the app works as usual. Setup then shows "No posts recognized" for that app. Update the selector lists when that happens. Label fallbacks ("Reels", "Video") only work with English UI.
 - Overlays follow the feed about 150 ms behind while you scroll.
 - Post masks let touches through so the feed can still scroll. Tapping a masked post can still open it.
 - A post that has no content signature (no image description or text) is keyed by its author alone, so other such posts from the same author that day don't count again.
