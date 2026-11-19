@@ -1,0 +1,17 @@
+# Coolify: Docker Compose build pack, base directory /server.
+# Set the api service domain to https://api.sanefeed.byhan.id:8787 (the :8787 is the container port, not the public one).
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      # Coolify generates and stores this secret; read it from the Environment Variables tab.
+      - ADMIN_TOKEN=${SERVICE_PASSWORD_64_ADMIN}
+      - TRUST_PROXY=1
+    volumes:
+      - sanefeed-data:/app/data
+    expose:
+      - "8787"
+
+volumes:
+  sanefeed-data:

@@ -24,6 +24,21 @@ docker run -p 8787:8787 -e ADMIN_TOKEN=... -v sanefeed-data:/app/data sanefeed-s
 | `ADMIN_TOKEN` | none (required)           | Server exits on start if missing.       |
 | `PORT`        | `8787`                    |                                         |
 | `DB_PATH`     | `./data/sanefeed.sqlite`  | Directory is created if missing.        |
+| `TRUST_PROXY` | unset                     | `1`: rate-limit by the last `X-Forwarded-For` entry. Set only behind a reverse proxy that is the sole way in. |
+
+`GET /healthz` returns `200 ok`; the Docker image uses it as its `HEALTHCHECK`.
+
+### Deploy on Coolify
+
+`docker-compose.yml` is set up for Coolify's Docker Compose build pack.
+
+1. DNS: point an `A` record for `api.sanefeed.byhan.id` at the Coolify server.
+2. Coolify → New Resource → your Git repository → Build Pack **Docker Compose**, Base Directory `/server`, Docker Compose Location `/docker-compose.yml`.
+3. On the `api` service set Domains to `https://api.sanefeed.byhan.id:8787` (`:8787` tells the proxy the container port; the public site is served on 443 with a Let's Encrypt certificate).
+4. Deploy. Coolify generates `ADMIN_TOKEN` from `SERVICE_PASSWORD_64_ADMIN`; copy it from the Environment Variables tab for admin calls.
+5. Check: `curl https://api.sanefeed.byhan.id/healthz` → `ok`.
+
+The SQLite database lives in the `sanefeed-data` volume and survives redeploys. Back it up with Coolify's volume backups or by copying `/app/data/sanefeed.sqlite`. If you put Cloudflare's proxy in front, the last `X-Forwarded-For` hop becomes Cloudflare, so leave the DNS record unproxied (grey cloud) or rate limits are shared.
 
 ### Seeding
 
