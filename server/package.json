@@ -1,0 +1,14 @@
+{
+  "name": "sanefeed-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "seed": "bun run src/seed.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
