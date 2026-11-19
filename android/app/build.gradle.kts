@@ -3,8 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// Release builds have no default server; pass -PsanefeedServerUrl=https://... or set it in the app.
-val releaseServerUrl = providers.gradleProperty("sanefeedServerUrl").getOrElse("")
+// Release default server; override with -PsanefeedServerUrl=https://... or in the app.
+val releaseServerUrl = providers.gradleProperty("sanefeedServerUrl").getOrElse("https://api.sanefeed.byhan.id")
 
 android {
     namespace = "app.sanefeed"
