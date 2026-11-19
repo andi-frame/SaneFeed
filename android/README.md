@@ -18,6 +18,10 @@ Requirements: JDK 17 or newer, Android SDK with platform 36. `local.properties` 
 
 Release builds use R8 and resource shrinking. All builds default to `https://api.sanefeed.byhan.id`; the URL can also be changed in the app. For a local server, build with `-PsanefeedServerUrl=http://127.0.0.1:8787` and run `adb reverse tcp:8787 tcp:8787` so the phone or emulator reaches your computer. Plain HTTP is allowed in debug builds only.
 
+## Release
+
+Debug builds install as `app.sanefeed.debug` ("SaneFeed Debug"), so they sit next to a release install; build with `-PsanefeedDebugSuffix=false` to update a debug install made as plain `app.sanefeed`. Release builds are signed when `SANEFEED_KEYSTORE_PATH`, `SANEFEED_KEYSTORE_PASSWORD`, `SANEFEED_KEY_ALIAS` and `SANEFEED_KEY_PASSWORD` are set as environment variables or Gradle properties, and unsigned otherwise. `-PversionName` and `-PversionCode` set the version (default `1.0.0` / `1`). Tagged releases are built by CI; see [Release](../README.md#release) in the root README.
+
 ## Turn on the service
 
 1. Open SaneFeed. The **Setup** section at the top lists what's still needed. Tap **Open settings** next to Accessibility service, read the disclosure and tap **Agree and open Accessibility settings**.
