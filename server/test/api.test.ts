@@ -70,7 +70,8 @@ describe("admin", () => {
     for (const headers of variants) {
       expect((await req("/v1/buzzers/x/abc", { method: "PUT", headers })).status).toBe(401);
       expect((await req("/v1/buzzers/x/abc", { method: "DELETE", headers })).status).toBe(401);
-      expect((await req("/v1/reports", { headers })).status).toBe(401);
+      expect((await req("/v1/admin/queue", { headers })).status).toBe(401);
+      expect((await req("/v1/admin/cases/1/decision", { method: "POST", headers })).status).toBe(401);
     }
     expect((await list()).version).toBe(0);
   });
@@ -84,42 +85,5 @@ describe("admin", () => {
     }
     const badBody = await req("/v1/buzzers/x/abc", { method: "PUT", headers: auth, body: "{" });
     expect(badBody.status).toBe(400);
-  });
-});
-
-describe("POST /v1/reports", () => {
-  const post = (body: unknown) =>
-    req("/v1/reports", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-
-  test("accepted, stored as pending, not listed", async () => {
-    const res = await post({ platform: "x", handle: "  @SomeBuzzer ", reason: "spam" });
-    expect(res.status).toBe(202);
-    expect(await res.json()).toEqual({ status: "received" });
-    expect(res.headers.get("Access-Control-Allow-Origin")).toBe("*");
-    expect(await list()).toMatchObject({ version: 0, entries: [] });
-
-    const pending = (await (await req("/v1/reports", { headers: auth })).json()) as { reports: unknown[] };
-    expect(pending.reports).toHaveLength(1);
-    expect(pending.reports[0]).toMatchObject({ platform: "x", handle: "somebuzzer", reason: "spam" });
-  });
-
-  test("validates input", async () => {
-    for (const body of [{}, { platform: "x" }, { platform: "fb", handle: "a" }, { platform: "x", handle: "a b" }, { platform: "x", handle: "a", reason: 5 }, [1]]) {
-      expect((await post(body)).status).toBe(400);
-    }
-    const huge = await post({ platform: "x", handle: "abc", reason: "a".repeat(10_000) });
-    expect(huge.status).toBe(400);
-  });
-
-  test("rate limits per IP", async () => {
-    handle = createHandler({ store, adminToken: TOKEN, reportLimit: 3 });
-    for (let i = 0; i < 3; i++) expect((await post({ platform: "x", handle: "abc" })).status).toBe(202);
-    expect((await post({ platform: "x", handle: "abc" })).status).toBe(429);
-  });
-
-  test("CORS preflight", async () => {
-    const res = await req("/v1/reports", { method: "OPTIONS" });
-    expect(res.status).toBe(204);
-    expect(res.headers.get("Access-Control-Allow-Methods")).toContain("POST");
   });
 });
