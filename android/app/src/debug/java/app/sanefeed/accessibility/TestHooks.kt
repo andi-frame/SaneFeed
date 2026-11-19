@@ -28,6 +28,7 @@ import app.sanefeed.core.Platform
  *   including the fields `uiautomator dump` leaves out)
  * `adb shell am broadcast -a app.sanefeed.debug.COUNT --es platform x --ei count 0` (today's count)
  * `adb shell am broadcast -a app.sanefeed.debug.LIMIT --es platform x --ei limit 100` (daily limit)
+ * `adb shell am broadcast -a app.sanefeed.debug.BLOCK --es platform x --es handle someone` (manual list; UNBLOCK removes)
  *
  * SWIPE also takes `x` (default: screen centre); TAP takes `ms` (default 50).
  */
@@ -40,6 +41,8 @@ internal object TestHooks {
     private const val TREE_TAG = "SaneFeedTree"
     private const val COUNT = "app.sanefeed.debug.COUNT"
     private const val LIMIT = "app.sanefeed.debug.LIMIT"
+    private const val BLOCK = "app.sanefeed.debug.BLOCK"
+    private const val UNBLOCK = "app.sanefeed.debug.UNBLOCK"
 
     private var receiver: BroadcastReceiver? = null
 
@@ -68,13 +71,15 @@ internal object TestHooks {
                         },
                     )
                     TREE -> service.rootInActiveWindow?.let { log(it, 0) }
-                    COUNT, LIMIT -> {
+                    COUNT, LIMIT, BLOCK, UNBLOCK -> {
                         val graph = (service.application as SaneFeedApp).graph
                         val platform = Platform.fromId(intent.getStringExtra("platform")) ?: return
-                        if (intent.action == COUNT) {
-                            graph.counter.setCount(platform, intent.getIntExtra("count", 0))
-                        } else {
-                            graph.settings.setLimit(platform, intent.getIntExtra("limit", 0))
+                        val handle = intent.getStringExtra("handle").orEmpty()
+                        when (intent.action) {
+                            COUNT -> graph.counter.setCount(platform, intent.getIntExtra("count", 0))
+                            LIMIT -> graph.settings.setLimit(platform, intent.getIntExtra("limit", 0))
+                            BLOCK -> graph.settings.addManual(platform, handle)
+                            else -> graph.settings.removeManual(platform, handle)
                         }
                     }
                 }
@@ -88,6 +93,8 @@ internal object TestHooks {
             addAction(TREE)
             addAction(COUNT)
             addAction(LIMIT)
+            addAction(BLOCK)
+            addAction(UNBLOCK)
         }
         ContextCompat.registerReceiver(service, hook, filter, android.Manifest.permission.DUMP, null, ContextCompat.RECEIVER_EXPORTED)
         receiver = hook
