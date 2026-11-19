@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug only: tells the debug install apart from a release install on the same phone. -->
+<resources>
+    <string name="app_name">SaneFeed Debug</string>
+    <string name="accessibility_service_label">SaneFeed Debug</string>
+</resources>
