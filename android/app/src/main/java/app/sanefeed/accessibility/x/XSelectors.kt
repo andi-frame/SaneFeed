@@ -29,12 +29,6 @@ internal object XSelectors {
     /** Profile top bar labels naming the account; used once the header has scrolled away. Group 1 is the handle. */
     val PROFILE_DESCRIPTIONS = listOf(Regex("""^Ask Grok about @([A-Za-z0-9_]{1,15})$"""))
 
-    /**
-     * Compose screen tag of a post opened on its own. Its author isn't exposed, so the post above
-     * the first reply takes the author of the masked post the user tapped to open it.
-     */
-    val DETAIL_SCREENS = listOf("PostDetail")
-
     /** Full-screen vertical video viewer opened from the Video tab or a video in the timeline. */
     val IMMERSIVE_VIEWER = listOf(
         ID + "immersive_video_player",

@@ -5,7 +5,6 @@ import android.view.accessibility.AccessibilityNodeInfo
 import app.sanefeed.accessibility.Authored
 import app.sanefeed.accessibility.Nodes
 import app.sanefeed.accessibility.PlatformAdapter
-import app.sanefeed.accessibility.Region
 import app.sanefeed.accessibility.ScreenScan
 import app.sanefeed.core.Handles
 import app.sanefeed.core.Platform
@@ -41,14 +40,7 @@ class XAdapter : PlatformAdapter {
             val bounds = Rect(row.bounds)
             if (bounds.intersect(clip)) Authored(row.key, row.handle, bounds, clip, row.countable) else null
         }
-        // The opened post is everything in the detail list above the first reply.
-        val opened = walk.detailList?.let { list ->
-            val clip = clipOf(list)
-            val repliesTop = rows.filter { it.list === list }.minOfOrNull { it.bounds.top } ?: list.bottom
-            val bounds = Rect(list.left, list.top, list.right, repliesTop)
-            if (bounds.intersect(clip)) Region(bounds, clip) else null
-        }
-        return ScreenScan(false, items, maxOf(walk.headers, rows.size), tabs, walk.owner, opened)
+        return ScreenScan(false, items, maxOf(walk.headers, rows.size), tabs, walk.owner)
     }
 
     private class Row(val key: String, val handle: String, val bounds: Rect, val list: Rect, val countable: Boolean)
@@ -63,7 +55,6 @@ class XAdapter : PlatformAdapter {
         var owner: String? = null
         var immersive = false
         var videoTab: Rect? = null
-        var detailList: Rect? = null
         private var visited = 0
         private var listEnded = false
         private val navTop = screen.bottom - screen.height() / Nodes.BOTTOM_NAV_FRACTION
@@ -82,9 +73,8 @@ class XAdapter : PlatformAdapter {
                 if (node.isSelected) immersive = true
             }
             if (id in S.POST_ROW) return viewRow(node, bounds, parent)
-            val tag = if (id in S.PROFILE_SCREENS || id in S.DETAIL_SCREENS) id else surface
+            val tag = if (id in S.PROFILE_SCREENS) id else surface
             if (tag in S.PROFILE_SCREENS && owner == null) owner = ownerOf(node)
-            if (tag in S.DETAIL_SCREENS && detailList == null && node.isScrollable) detailList = bounds
             if (listEnded && isChrome(bounds)) {
                 chrome += bounds
                 // The bottom bar is still read for the Video tab.

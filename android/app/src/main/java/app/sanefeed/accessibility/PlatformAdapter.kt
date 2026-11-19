@@ -12,9 +12,6 @@ import app.sanefeed.core.Platform
  */
 class Authored(val key: String, val handle: String, val bounds: Rect, val clip: Rect, val countable: Boolean)
 
-/** An area on screen and the visible part of the list it scrolls in, as in [Authored]. */
-class Region(val bounds: Rect, val clip: Rect)
-
 class ScreenScan(
     val isReelsScreen: Boolean,
     val items: List<Authored>,
@@ -24,11 +21,6 @@ class ScreenScan(
     val blockedTabs: List<Rect>,
     /** Account whose profile or story fills the screen, if any. */
     val owner: String? = null,
-    /**
-     * A post opened on its own screen whose author the app doesn't expose (X's post detail). The
-     * service attributes it to the masked post the user tapped to open it.
-     */
-    val opened: Region? = null,
 )
 
 /**

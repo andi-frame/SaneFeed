@@ -16,7 +16,6 @@ import app.sanefeed.SaneFeedApp
 import app.sanefeed.accessibility.instagram.InstagramAdapter
 import app.sanefeed.accessibility.x.XAdapter
 import app.sanefeed.core.MaskMotion
-import app.sanefeed.core.PostKeys
 import app.sanefeed.core.Platform
 import app.sanefeed.core.Visibility
 
@@ -57,13 +56,6 @@ class SaneFeedAccessibilityService : AccessibilityService() {
     /** Written per event on main, read by the scan thread to attribute errors. */
     @Volatile private var lastEventPlatform: Platform? = null
 
-    /** Masks on screen; main thread. */
-    private var shownMasks: List<Authored> = emptyList()
-
-    /** Author of the masked post the user last tapped, and when; written on main, read by the scan thread. */
-    @Volatile private var openedFrom: String? = null
-    @Volatile private var openedAt = 0L
-
     private val dispatchScan = Runnable {
         scanPosted = false
         scanRunning = true
@@ -102,7 +94,6 @@ class SaneFeedAccessibilityService : AccessibilityService() {
         when (event.eventType) {
             AccessibilityEvent.TYPE_VIEW_SCROLLED -> onScrolled(event)
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> lastScrollY = null
-            AccessibilityEvent.TYPE_VIEW_CLICKED -> onClicked(event)
             else -> Unit
         }
         scheduleScan()
@@ -153,43 +144,6 @@ class SaneFeedAccessibilityService : AccessibilityService() {
         return previous?.let { MaskMotion.positionDelta(event.scrollY - it, lastDelta) }
     }
 
-    /**
-     * Remembers the author when the user taps a masked post (masks pass touches through), so the
-     * post detail it opens stays covered. A tap on another post forgets it; taps on buttons don't.
-     */
-    private fun onClicked(event: AccessibilityEvent) {
-        val source = try {
-            event.source
-        } catch (_: RuntimeException) {
-            null
-        } ?: return
-        val clicked = Rect().also(source::getBoundsInScreen)
-        val masked = shownMasks.filter { Rect.intersects(it.bounds, clicked) }.maxByOrNull { overlap(it.bounds, clicked) }
-        if (masked != null) {
-            openedFrom = masked.handle
-            openedAt = SystemClock.uptimeMillis()
-        } else if (clicked.width() * 10 >= resources.displayMetrics.widthPixels * 8) {
-            openedFrom = null
-        }
-    }
-
-    private fun overlap(a: Rect, b: Rect): Int {
-        val shared = Rect(a)
-        return if (shared.intersect(b)) shared.width() * shared.height() else 0
-    }
-
-    /** Scan thread. The mask for a post detail opened from a masked post. */
-    private fun openedMask(platform: Platform, opened: Region?): Authored? {
-        val from = openedFrom ?: return null
-        if (opened == null) {
-            // Give the detail screen time to open before forgetting the tap.
-            if (SystemClock.uptimeMillis() - openedAt > OPEN_TIMEOUT_MS) openedFrom = null
-            return null
-        }
-        if (!graph.isHidden(platform, from)) return null
-        return Authored(PostKeys.of(from, "opened"), from, opened.bounds, opened.clip, countable = false)
-    }
-
     private fun scheduleScan() {
         if (!connected) return
         if (scanRunning) {
@@ -218,7 +172,6 @@ class SaneFeedAccessibilityService : AccessibilityService() {
     private fun render(frame: Frame?) {
         if (connected) {
             overlays.render(frame, scrolled, MaskMotion.slack(lastDelta))
-            shownMasks = frame?.masks.orEmpty()
             main.removeCallbacks(watchdog)
             if (overlays.isShowing) main.postDelayed(watchdog, WATCHDOG_MS)
         }
@@ -269,10 +222,6 @@ class SaneFeedAccessibilityService : AccessibilityService() {
                 count++
             }
         }
-        openedMask(platform, scan.opened)?.let {
-            masks += it
-            graph.health.onHidden(platform, it.key)
-        }
         if (!scan.isReelsScreen) graph.health.onFeedScan(platform, scan.candidates, scan.items.count { it.countable })
         val panel = if (count >= limit) Panel.LIMIT else null
         val tabs = if (settings.blockReels) scan.blockedTabs else emptyList()
@@ -304,9 +253,6 @@ class SaneFeedAccessibilityService : AccessibilityService() {
 
         /** Scroll events arrive about every 100 ms while a list moves; a longer gap means it stopped. */
         const val SETTLE_MS = 160L
-
-        /** How long after tapping a masked post its detail screen may take to open. */
-        const val OPEN_TIMEOUT_MS = 2000L
         const val WATCHDOG_MS = 1000L
         const val BACK_INTERVAL_MS = 1500L
         const val MAX_BACKS = 3
