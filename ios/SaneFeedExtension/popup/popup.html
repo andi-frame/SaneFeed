@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>SaneFeed</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="top">
+    <h1>SaneFeed</h1>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button type="button" role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="true">Settings</button>
+      <button type="button" role="tab" id="tab-report" aria-controls="panel-report" aria-selected="false">Report</button>
+      <button type="button" role="tab" id="tab-review" aria-controls="panel-review" aria-selected="false">Review</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
+      <h2 class="group-title">Today</h2>
+      <div class="group" id="today"></div>
+
+      <h2 class="group-title">Daily limit</h2>
+      <div class="group">
+        <label class="row">
+          <span>X</span>
+          <input type="number" id="limit-x" inputmode="numeric" min="1" max="1000" step="1">
+        </label>
+        <label class="row">
+          <span>Instagram</span>
+          <input type="number" id="limit-instagram" inputmode="numeric" min="1" max="1000" step="1">
+        </label>
+      </div>
+      <p class="note">Posts per platform per day, 1 to 1000. Hidden posts are not counted.</p>
+
+      <h2 class="group-title">Filters</h2>
+      <div class="group">
+        <label class="row">
+          <span>Remove reels and video feeds</span>
+          <input type="checkbox" role="switch" id="block-reels" class="switch">
+        </label>
+        <label class="row">
+          <span>Hide handles ending in 6+ digits</span>
+          <input type="checkbox" role="switch" id="heuristic" class="switch">
+        </label>
+      </div>
+      <p class="note">Handles like budi83749201 are common for mass-created accounts.</p>
+
+      <h2 class="group-title">Your buzzer list</h2>
+      <div class="group">
+        <form class="row row-form" id="manual-form" novalidate>
+          <select id="manual-platform" aria-label="Platform">
+            <option value="x">X</option>
+            <option value="instagram">Instagram</option>
+          </select>
+          <input type="text" id="manual-handle" placeholder="@handle" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Handle">
+          <button type="submit" class="link">Add</button>
+        </form>
+        <p class="field-error" id="manual-error" hidden></p>
+        <ul class="list" id="manual-list"></ul>
+      </div>
+
+      <h2 class="group-title">Shared buzzer list</h2>
+      <div class="group">
+        <div class="row">
+          <span id="list-summary"></span>
+          <button type="button" class="link" id="sync-now">Sync now</button>
+        </div>
+        <form class="row row-form" id="server-form" novalidate>
+          <input type="url" id="server-url" aria-label="Server URL" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button type="submit" class="link">Save</button>
+        </form>
+        <p class="field-error" id="server-error" hidden></p>
+      </div>
+      <p class="note" id="sync-status"></p>
+    </section>
+
+    <section id="panel-report" role="tabpanel" aria-labelledby="tab-report" hidden>
+      <form id="report-form" novalidate>
+        <h2 class="group-title">Account</h2>
+        <div class="group">
+          <label class="row">
+            <span>Platform</span>
+            <select id="report-platform">
+              <option value="x">X</option>
+              <option value="instagram">Instagram</option>
+            </select>
+          </label>
+          <label class="row">
+            <span>Handle</span>
+            <input type="text" id="report-handle" placeholder="@handle" autocomplete="off" autocapitalize="off" spellcheck="false">
+          </label>
+          <p class="field-error" id="report-handle-error" hidden></p>
+        </div>
+
+        <h2 class="group-title"><label for="report-reason">Reason</label></h2>
+        <div class="group">
+          <textarea id="report-reason" rows="4" maxlength="1000" placeholder="What does this account do? For example: posts the same campaign text as dozens of new accounts."></textarea>
+          <p class="field-error" id="report-reason-error" hidden></p>
+        </div>
+        <p class="note" id="report-reason-count">0 of 1000 characters</p>
+
+        <h2 class="group-title">Proof links</h2>
+        <div class="group">
+          <ul class="list" id="proof-list"></ul>
+          <div class="row">
+            <button type="button" class="link" id="proof-add">Add link</button>
+          </div>
+          <p class="field-error" id="report-proofs-error" hidden></p>
+        </div>
+        <p class="note">1 to 5 https links: posts, archived pages, or hosted screenshots.</p>
+
+        <div class="actions">
+          <button type="submit" class="primary" id="report-submit">Send report</button>
+        </div>
+        <p class="status" id="report-status" role="status"></p>
+      </form>
+    </section>
+
+    <section id="panel-review" role="tabpanel" aria-labelledby="tab-review" hidden>
+      <div class="group">
+        <label class="row">
+          <span>Platform</span>
+          <select id="review-platform">
+            <option value="x">X</option>
+            <option value="instagram">Instagram</option>
+          </select>
+        </label>
+      </div>
+      <p class="note">Pending reports, highest priority first. Vote on whether each account is a buzzer.</p>
+      <p class="status" id="review-status" role="status"></p>
+      <ul class="cases" id="case-list"></ul>
+      <div class="actions">
+        <button type="button" class="secondary" id="review-more" hidden>Load more</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="../content/core.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
