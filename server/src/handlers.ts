@@ -175,6 +175,8 @@ export function createHandler(opts: HandlerOptions): Handler {
     const method = req.method;
     const ip = clientIp(req) ?? "unknown";
 
+    if (path === "/healthz") return new Response("ok");
+
     if (path === "/v1/buzzers") {
       if (method !== "GET") return error(405, "method not allowed");
       const list = store.list();
