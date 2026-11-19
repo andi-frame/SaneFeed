@@ -1,0 +1,5 @@
+/* Video tab and immersive video entry points. main.js sets data-sanefeed-reels="off" when the toggle is off. */
+html:not([data-sanefeed-reels="off"]) a[href^="/i/video"],
+html:not([data-sanefeed-reels="off"]) a[href^="/i/immersive"] {
+  display: none !important;
+}

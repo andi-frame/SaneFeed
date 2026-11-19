@@ -1,0 +1,94 @@
+/* Injected before the page renders. Elements are prefixed to avoid clashing with site styles. */
+.sanefeed-hidden {
+  display: none !important;
+}
+
+.sanefeed-bar {
+  --sf-bg: #f2f3f2;
+  --sf-fg: #4a504d;
+  --sf-line: #dfe2e0;
+  --sf-accent: #2f5d50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 0;
+  padding: 8px 16px;
+  border-top: 1px solid var(--sf-line);
+  border-bottom: 1px solid var(--sf-line);
+  background: var(--sf-bg);
+  color: var(--sf-fg);
+  font: 13px/1.4 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+.sanefeed-bar span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sanefeed-bar button {
+  flex: none;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--sf-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+html.sanefeed-locked,
+html.sanefeed-locked body {
+  overflow: hidden !important;
+}
+
+.sanefeed-overlay {
+  --sf-bg: #ffffff;
+  --sf-fg: #1c1f1e;
+  --sf-accent: #2f5d50;
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  background: var(--sf-bg);
+  color: var(--sf-fg);
+  font: 17px/1.45 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+.sanefeed-overlay__panel {
+  max-width: 340px;
+}
+
+.sanefeed-overlay__title {
+  margin: 0 0 8px;
+  color: var(--sf-accent);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.sanefeed-overlay__message {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sanefeed-bar {
+    --sf-bg: #1d2120;
+    --sf-fg: #b9c0bd;
+    --sf-line: #2c3230;
+    --sf-accent: #7fb3a3;
+  }
+
+  .sanefeed-overlay {
+    --sf-bg: #111413;
+    --sf-fg: #eef1ef;
+    --sf-accent: #7fb3a3;
+  }
+}

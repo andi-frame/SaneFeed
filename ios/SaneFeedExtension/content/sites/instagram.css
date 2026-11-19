@@ -1,0 +1,5 @@
+/* Reels nav item and profile Reels tab. main.js sets data-sanefeed-reels="off" when the toggle is off. */
+html:not([data-sanefeed-reels="off"]) a[href^="/reels/"],
+html:not([data-sanefeed-reels="off"]) a[href$="/reels/"] {
+  display: none !important;
+}
