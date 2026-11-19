@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sf_background"
+    android:clickable="true"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    android:paddingHorizontal="32dp">
+
+    <TextView
+        android:id="@+id/overlay_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/sf_on_surface"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/overlay_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:lineSpacingMultiplier="1.2"
+        android:textColor="@color/sf_on_surface_variant"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/overlay_leave"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/overlay_button"
+        android:gravity="center"
+        android:paddingHorizontal="24dp"
+        android:text="@string/overlay_leave_app"
+        android:textColor="@color/sf_on_accent"
+        android:textSize="16sp"
+        android:focusable="true"
+        android:clickable="true" />
+</LinearLayout>

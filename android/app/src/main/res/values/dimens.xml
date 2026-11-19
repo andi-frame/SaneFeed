@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Below the status bar on most devices; the chip is not touchable, so overlap is harmless. -->
+    <dimen name="overlay_chip_top">40dp</dimen>
+</resources>
