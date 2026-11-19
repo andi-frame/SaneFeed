@@ -4,23 +4,37 @@ import android.graphics.Rect
 import android.view.accessibility.AccessibilityNodeInfo
 import app.sanefeed.core.Platform
 
-/** A post on screen. [bounds] are screen coordinates, already clipped to what is visible. */
-class PostNode(val key: String, val handle: String, val bounds: Rect)
+/**
+ * Something on screen written by [handle]: a feed post, a comment or reply, a search result, a
+ * quoted post or a story avatar. [bounds] are screen coordinates, already clipped to [clip], the
+ * visible part of the list the item scrolls in (app bars and tab bars excluded). Masks never leave
+ * [clip]. Only [countable] items, feed posts, count toward the daily limit.
+ */
+class Authored(val key: String, val handle: String, val bounds: Rect, val clip: Rect, val countable: Boolean)
+
+/** An area on screen and the visible part of the list it scrolls in, as in [Authored]. */
+class Region(val bounds: Rect, val clip: Rect)
 
 class ScreenScan(
     val isReelsScreen: Boolean,
-    val posts: List<PostNode>,
+    val items: List<Authored>,
     /** Post containers found, including ones whose author couldn't be read; health diagnostics only. */
     val candidates: Int,
     /** Reels / video tabs to cover, in screen coordinates. */
     val blockedTabs: List<Rect>,
-    /** Scrolling feed area posts are measured against; the window bounds if no feed list is found. */
-    val viewport: Rect,
+    /** Account whose profile or story fills the screen, if any. */
+    val owner: String? = null,
+    /**
+     * A post opened on its own screen whose author the app doesn't expose (X's post detail). The
+     * service attributes it to the masked post the user tapped to open it.
+     */
+    val opened: Region? = null,
 )
 
 /**
  * Reads one app's UI. Implementations try known view ids first, then content descriptions and
- * text. Selectors are best effort: when nothing matches, the scan is empty and the app works normally.
+ * text. Each surface (feed, comments, search, profile, stories) is read on its own and fails
+ * safe: when its selectors match nothing, it contributes nothing and the app works normally.
  */
 interface PlatformAdapter {
     val platform: Platform

@@ -3,7 +3,7 @@
     <string name="app_name">SaneFeed</string>
 
     <string name="accessibility_service_label">SaneFeed</string>
-    <string name="accessibility_service_description">Works only inside X and Instagram. Reads account handles and the position of posts on screen to hide accounts on your buzzer list, block Reels and video tabs, and count posts seen today. Nothing you see leaves your phone.</string>
+    <string name="accessibility_service_description">Works only inside X and Instagram. Reads account handles and the position of posts, comments and search results on screen to hide accounts on your buzzer list, block Reels and video tabs, and count posts seen today. Nothing you see leaves your phone.</string>
 
     <string name="action_back">Back</string>
     <string name="action_save">Save</string>
@@ -24,6 +24,9 @@
     <string name="overlay_video_title">Video is off</string>
     <string name="overlay_short_video_body">SaneFeed blocks this screen. You can change this in SaneFeed under Feed.</string>
     <string name="overlay_leave_app">Leave app</string>
+    <string name="overlay_blocked_title">\@%1$s is hidden</string>
+    <string name="overlay_blocked_body">This account is on your buzzer list, so SaneFeed hides its profile, stories, posts and comments.</string>
+    <string name="overlay_go_back">Go back</string>
 
     <!-- Setup and health -->
     <string name="section_setup">Setup</string>
@@ -110,9 +113,9 @@
     <string name="disclosure_title">Before you turn it on</string>
     <string name="disclosure_intro">SaneFeed uses Android\'s accessibility service to see what X and Instagram show on screen. Android requires your permission for this.</string>
     <string name="disclosure_reads_title">What it reads</string>
-    <string name="disclosure_reads_body">Account handles on posts, where posts are on screen, and whether a Reels or video screen is open. Only inside X and Instagram. It doesn\'t read messages or anything you type.</string>
+    <string name="disclosure_reads_body">Account handles on posts, comments, search results, stories and profiles, where they are on screen, and whether a Reels or video screen is open. Only inside X and Instagram. It doesn\'t read messages or anything you type.</string>
     <string name="disclosure_does_title">What it does</string>
-    <string name="disclosure_does_body">Covers posts from accounts on your buzzer lists, covers the Reels and video tabs, counts posts you\'ve seen today, and shows a screen when you reach your limit. It presses Back when Reels open and Home when you tap Leave app.</string>
+    <string name="disclosure_does_body">Covers posts, comments, search results and stories from accounts on your buzzer lists and their profiles, covers the Reels and video tabs, counts posts you\'ve seen today, and shows a screen when you reach your limit. It presses Back when Reels open or you tap Go back, and Home when you tap Leave app.</string>
     <string name="disclosure_network_title">What leaves your phone</string>
     <string name="disclosure_network_body">Nothing you see or do. The app only downloads the buzzer list from the server. Reports and votes are sent only when you submit them, with a random install ID and no account.</string>
     <string name="disclosure_control_title">Turning it off</string>
