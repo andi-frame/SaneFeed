@@ -20,7 +20,8 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "DEFAULT_SERVER_URL", "\"http://10.0.2.2:8787\"")
+            // Reached on emulators and USB phones alike via `adb reverse tcp:8787 tcp:8787`.
+            buildConfigField("String", "DEFAULT_SERVER_URL", "\"http://127.0.0.1:8787\"")
         }
         release {
             isMinifyEnabled = true
