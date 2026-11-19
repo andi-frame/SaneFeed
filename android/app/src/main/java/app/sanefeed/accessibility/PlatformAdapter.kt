@@ -10,6 +10,8 @@ class PostNode(val key: String, val handle: String, val bounds: Rect)
 class ScreenScan(
     val isReelsScreen: Boolean,
     val posts: List<PostNode>,
+    /** Post containers found, including ones whose author couldn't be read; health diagnostics only. */
+    val candidates: Int,
     /** Reels / video tabs to cover, in screen coordinates. */
     val blockedTabs: List<Rect>,
     /** Scrolling feed area posts are measured against; the window bounds if no feed list is found. */

@@ -15,6 +15,12 @@ internal object XSelectors {
     /** Node inside a row whose text or description holds "@handle". */
     val POST_AUTHOR = listOf(ID + "tweet_header", ID + "screenname_item", ID + "user_name")
 
+    /**
+     * Compose test tags (X 12.x and later, `com.x.android.main.MainActivity`). Despite its name,
+     * `timeline_post` tags the header row (name, @handle, time); its parent is the post.
+     */
+    val POST_HEADER_TAGS = listOf("timeline_post")
+
     /** Post body text, the preferred content signature. */
     val POST_TEXT = listOf(ID + "tweet_content_text", ID + "tweet_text")
 

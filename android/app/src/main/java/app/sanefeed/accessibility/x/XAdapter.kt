@@ -20,19 +20,35 @@ class XAdapter : PlatformAdapter {
         val tabs = listOfNotNull(videoTab?.let(Nodes::bounds))
         val immersive = videoTab?.isSelected == true ||
             Nodes.byId(root, S.IMMERSIVE_VIEWER).any { Nodes.coversScreen(it, screen) }
-        if (immersive) return ScreenScan(true, emptyList(), tabs, viewport)
-        return ScreenScan(false, posts(root, viewport), tabs, viewport)
+        if (immersive) return ScreenScan(true, emptyList(), 0, tabs, viewport)
+
+        val rows = Nodes.byId(root, S.POST_ROW)
+        if (rows.isNotEmpty()) return ScreenScan(false, fromRows(rows, viewport), rows.size, tabs, viewport)
+        val headers = Nodes.byTag(root, S.POST_HEADER_TAGS)
+        if (headers.isNotEmpty()) return ScreenScan(false, fromHeaders(headers, viewport), headers.size, tabs, viewport)
+        val described = rowsByDescription(root, viewport)
+        return ScreenScan(false, fromRows(described, viewport), described.size, tabs, viewport)
     }
 
-    private fun posts(root: AccessibilityNodeInfo, viewport: Rect): List<PostNode> {
-        val rows = Nodes.byId(root, S.POST_ROW).ifEmpty { rowsByDescription(root, viewport) }
-        return rows.mapNotNull { row ->
-            val bounds = Nodes.bounds(row)
-            if (!bounds.intersect(viewport)) return@mapNotNull null
-            val handle = authorOf(row) ?: return@mapNotNull null
-            val signature = Nodes.firstById(row, S.POST_TEXT)?.text ?: row.contentDescription
-            PostNode(PostKeys.of(handle, signature), handle, bounds)
-        }
+    /** View-based X builds: one list row per post. */
+    private fun fromRows(rows: List<AccessibilityNodeInfo>, viewport: Rect): List<PostNode> = rows.mapNotNull { row ->
+        val bounds = Nodes.bounds(row)
+        if (!bounds.intersect(viewport)) return@mapNotNull null
+        val handle = authorOf(row) ?: return@mapNotNull null
+        val signature = Nodes.firstById(row, S.POST_TEXT)?.text ?: row.contentDescription
+        PostNode(PostKeys.of(handle, signature), handle, bounds)
+    }
+
+    /** Compose X builds: the tagged header (name, @handle, time) sits directly inside the post container. */
+    private fun fromHeaders(headers: List<Nodes.Tagged>, viewport: Rect): List<PostNode> = headers.mapNotNull { header ->
+        val post = header.parent ?: header.node
+        val bounds = Nodes.bounds(post)
+        if (!bounds.intersect(viewport)) return@mapNotNull null
+        val handle = Nodes.children(header.node).firstNotNullOfOrNull { child -> Nodes.label(child)?.let(::handleIn) }
+            ?: return@mapNotNull null
+        // The body is the longest text directly in the container; the header holds only name and time.
+        val signature = Nodes.children(post).mapNotNull { it.text }.maxByOrNull { it.length }
+        PostNode(PostKeys.of(handle, signature), handle, bounds)
     }
 
     /** Outermost wide nodes whose description mentions a handle; nested matches are skipped. */

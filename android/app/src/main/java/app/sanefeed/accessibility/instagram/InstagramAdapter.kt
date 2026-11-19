@@ -30,15 +30,16 @@ class InstagramAdapter : PlatformAdapter {
         val onReels = reelsTab?.isSelected == true || Nodes.byId(root, S.REELS_VIEWER).any { Nodes.coversScreen(it, screen) }
         if (onReels) {
             previous = emptyList()
-            return ScreenScan(true, emptyList(), tabs, viewport)
+            return ScreenScan(true, emptyList(), 0, tabs, viewport)
         }
-        val posts = posts(root, viewport)
+        val headers = Nodes.byId(root, S.POST_HEADER).map(Nodes::bounds)
+        val anchors = anchors(root, headers, viewport)
+        val posts = posts(root, anchors, viewport)
         previous = posts
-        return ScreenScan(false, posts, tabs, viewport)
+        return ScreenScan(false, posts, maxOf(headers.size, anchors.size), tabs, viewport)
     }
 
-    private fun posts(root: AccessibilityNodeInfo, viewport: Rect): List<PostNode> {
-        val anchors = anchors(root, viewport)
+    private fun posts(root: AccessibilityNodeInfo, anchors: List<Anchor>, viewport: Rect): List<PostNode> {
         if (anchors.isEmpty()) return emptyList()
         val signatures = Nodes.allById(root, S.POST_SIGNATURE).map { Nodes.bounds(it).top to Nodes.label(it) }
         val posts = ArrayList<PostNode>(anchors.size + 1)
@@ -48,7 +49,7 @@ class InstagramAdapter : PlatformAdapter {
             val bounds = Rect(viewport.left, anchor.top, viewport.right, bottom)
             if (bounds.intersect(viewport)) posts += PostNode(PostKeys.of(anchor.handle, signature), anchor.handle, bounds)
         }
-        carriedOver(posts.first(), viewport)?.let { posts.add(0, it) }
+        posts.firstOrNull()?.let { carriedOver(it, viewport) }?.let { posts.add(0, it) }
         return posts
     }
 
@@ -60,8 +61,7 @@ class InstagramAdapter : PlatformAdapter {
         return PostNode(above.key, above.handle, Rect(viewport.left, viewport.top, viewport.right, first.bounds.top))
     }
 
-    private fun anchors(root: AccessibilityNodeInfo, viewport: Rect): List<Anchor> {
-        val headers = Nodes.byId(root, S.POST_HEADER).map(Nodes::bounds)
+    private fun anchors(root: AccessibilityNodeInfo, headers: List<Rect>, viewport: Rect): List<Anchor> {
         val byId = Nodes.byId(root, S.POST_AUTHOR).mapNotNull { node ->
             val handle = node.text?.let(::usernameOf) ?: return@mapNotNull null
             val name = Nodes.bounds(node)
